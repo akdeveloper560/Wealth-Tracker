@@ -5,7 +5,500 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Wealth Tracker (Live Market Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   <link rel="stylesheet" href="/static/style.css">  <link rel="stylesheet" href="style.css">
+   <style>
+       /* --- Global Slate Reset --- */
+body {
+    background-color: #0b0f17; /* High-end dark charcoal background */
+    color: #e2e8f0; /* Soft readable silver text */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 100px 20px 60px 20px; /* Navbar space adjust kiya */
+    box-sizing: border-box;
+    letter-spacing: -0.1px;
+}
+
+/* --- Clean Matte Navbar --- */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    background: #111827;
+    border-bottom: 1px solid #1f2937;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    box-sizing: border-box;
+    z-index: 999;
+}
+
+.nav-brand {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-tab {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+    background: #1f2937;
+    color: #ffffff;
+    transform: none;
+}
+
+.nav-tab.active {
+    background: #1f2937;
+    color: #3b82f6; /* Active state indicator blue */
+    font-weight: 600;
+}
+
+/* --- Dynamic Views Toggle System --- */
+.tab-content {
+    display: none;
+    width: 100%;
+    max-width: 900px;
+    animation: flatFade 0.3s ease;
+}
+
+.tab-content.active-content {
+    display: block;
+}
+
+/* --- Clean Corporate Title --- */
+h1 {
+    font-size: 2.3rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: #ffffff; 
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+/* --- Stealth Matte Containers --- */
+.chart-box, .form-container, .table-box {
+    width: 100%;
+    padding: 35px;
+    background: #111827; /* Solid premium matte grey panel */
+    border: 1px solid #1f2937; 
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    margin-bottom: 40px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.chart-box:hover, .table-box:hover {
+    transform: translateY(-3px);
+    border-color: #374151;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+.chart-box h3 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 1.15rem;
+    color: #9ca3af; 
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+/* --- Charts Layout --- */
+.charts-wrapper {
+    display: flex;
+    justify-content: space-around;
+    gap: 40px;
+    margin-bottom: 15px;
+}
+
+.chart-container {
+    flex: 1;
+    position: relative;
+    height: 260px; 
+    min-width: 0; /* Prevents chart blowout in flex containers */
+}
+
+/* --- Stealth Form Layout --- */
+form, .responsive-form {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input[type="text"], input[type="number"] {
+    padding: 12px 16px;
+    background: #030712; 
+    border: 1px solid #374151;
+    color: #ffffff;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    width: 190px;
+    font-weight: 500;
+    transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+    border-color: #6b7280;
+}
+
+/* --- Buttons --- */
+button, .btn-submit, .btn-toggle {
+    padding: 12px 26px;
+    background: #3b82f6; 
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    transition: all 0.2s ease;
+}
+
+button:hover, .btn-submit:hover, .btn-toggle:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+/* --- New Button Component Consistency --- */
+.btn-toggle {
+    margin-bottom: 10px;
+}
+
+/* --- Table Scrolling Core Fix --- */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth mobile momentum scroll */
+}
+
+/* --- Clean Grid Table Layout --- */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px; 
+    margin-top: -10px;
+    min-width: 600px; /* Ensures readable structure inside horizontal scroll */
+}
+
+th, td {
+    padding: 16px 20px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background-color: transparent;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #1f2937;
+}
+
+td {
+    background: #1f2937; 
+    border-top: 1px solid #374151;
+    border-bottom: 1px solid #374151;
+    font-size: 14px;
+    font-weight: 500;
+    color: #f3f4f6;
+}
+
+td:first-child {
+    border-left: 1px solid #374151;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+td:last-child {
+    border-right: 1px solid #374151;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+tr:hover td {
+    background: #374151; 
+}
+
+td:first-child b {
+    color: #ffffff;
+    background: #111827;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #374151;
+}
+
+/* --- Sliding Flat Action Buttons --- */
+.action-btns {
+    display: none;
+    gap: 10px;
+}
+
+tr:hover .action-btns {
+    display: flex;
+    animation: flatFade 0.2s ease;
+}
+tr:hover .status-text {
+    display: none;
+}
+
+.btn-buy {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+.btn-buy:hover { background: #10b981; color: #ffffff; }
+
+.btn-sell {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+.btn-sell:hover { background: #ef4444; color: #ffffff; }
+
+/* --- Modal Popup --- */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(3, 7, 18, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-content {
+    background: #111827;
+    border: 1px solid #374151;
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    animation: flatPop 0.2s ease;
+    box-sizing: border-box;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.modal-input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    gap: 8px;
+}
+
+.modal-input-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+.modal-input-group input { width: 100%; box-sizing: border-box; }
+.modal-buttons { display: flex; justify-content: space-between; margin-top: 25px; gap: 12px; }
+.modal-buttons button { flex: 1; }
+
+.btn-cancel { background: #374151; color: #d1d5db; border: none; }
+.btn-cancel:hover { background: #4b5563; color: #ffffff; }
+
+/* --- Extra Indicators --- */
+.live-indicator {
+    font-size: 11px;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    padding: 4px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 10px;
+    letter-spacing: 0.5px;
+}
+.text-profit { color: #10b981 !important; font-weight: 600; }
+.text-loss { color: #ef4444 !important; font-weight: 600; }
+
+/* --- Animations --- */
+@keyframes flatFade {
+    from { opacity: 0; transform: translateY(1px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes flatPop {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   --- HARDCORE RESPONSIVE MEDIA QUERIES ---
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    body {
+        padding: 130px 15px 40px 15px; /* Added more space at the top for stacked navbar */
+    }
+
+    /* Navbar stacking for smaller devices */
+    .navbar {
+        flex-direction: column;
+        height: auto;
+        padding: 15px 20px;
+        gap: 12px;
+    }
+
+    .nav-brand {
+        font-size: 1.2rem;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .nav-tab {
+        flex: 1;
+        padding: 8px 10px;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    /* Titles */
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .live-indicator {
+        display: block;
+        width: max-content;
+        margin: 8px auto 0 auto;
+    }
+
+    /* Layout Containers padding adjustment */
+    .chart-box, .form-container, .table-box {
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    /* Charts side-by-side break down to full-width stacked rows */
+    .charts-wrapper {
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .chart-container {
+        height: 220px; /* Slightly shorter height for smaller phones */
+    }
+
+    /* Forms go vertical stack */
+    form, .responsive-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .input-group {
+        width: 100%;
+    }
+
+    input[type="text"], input[type="number"] {
+        width: 100%; /* Forms full screen screen coverage */
+        box-sizing: border-box;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+    }
+
+    /* Action buttons persistent state for mobile (No hover trick dependency) */
+    .action-btns {
+        display: flex !important;
+        gap: 5px;
+        margin-top: 5px;
+    }
+    
+    .status-text {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .navbar {
+        padding: 10px 15px;
+    }
+
+    .nav-tab {
+        font-size: 12px;
+        padding: 6px 5px;
+    }
+}
+   </style>
 </head>
 <body>
 
@@ -184,6 +677,354 @@
         </div>
     </div>
 
-   <script src="/static/script.js"></script>  <script src="script.js"></script>
+   <script>
+       const colorPalette = [
+    '#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#f1c40f',
+    '#e74c3c', '#1abc9c', '#e84393', '#6c5ce7', '#ffeaa7'
+];
+
+// --- Responsive Chart Options Adjuster ---
+// Mobile screen (width < 768px) par legend ko 'bottom' kar dega taaki chart dabey nahi
+const isMobile = window.innerWidth < 768;
+
+const commonOptions = { 
+    responsive: true, 
+    maintainAspectRatio: false, 
+    plugins: { 
+        legend: { 
+            display: true, 
+            position: isMobile ? 'bottom' : 'right', 
+            labels: { 
+                color: 'white', 
+                boxWidth: 12,
+                font: {
+                    size: isMobile ? 11 : 12 // Mobile par text thoda chota kiya readability ke liye
+                }
+            } 
+        } 
+    }, 
+    cutout: '65%' 
+};
+
+// --- CHART INITIALIZATION ---
+const myChart1 = new Chart(document.getElementById('dynamicChart1'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#111827' }] }, options: commonOptions });
+const myChart2 = new Chart(document.getElementById('dynamicChart2'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#111827' }] }, options: commonOptions });
+
+const savingsChart1 = new Chart(document.getElementById('savingsChart1'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#111827' }] }, options: commonOptions });
+const savingsChart2 = new Chart(document.getElementById('savingsChart2'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#111827' }] }, options: commonOptions });
+
+const mfChart1 = new Chart(document.getElementById('mfChart1'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#111827' }] }, options: commonOptions });
+const mfChart2 = new Chart(document.getElementById('mfChart2'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#111827' }] }, options: commonOptions });
+
+let globalStocks = {};
+let globalSavings = {};
+let globalMFs = {};
+
+// --- TAB SWITCHER ---
+function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active-content'));
+    document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active-content');
+    btnElement.classList.add('active');
+    
+    // Mobile optimization: Tab badalne par smooth scrolling top par le jayegi
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- FORM DISPLAY HANDLERS ---
+function toggleForm(formId, btnId) {
+    const form = document.getElementById(formId);
+    const mainBtn = document.getElementById(btnId);
+    if (form.style.display === 'none' || form.style.display === '') { 
+        form.style.display = 'flex'; 
+        mainBtn.style.display = 'none'; 
+    }
+}
+
+function resetFormToggle(formId, btnId) {
+    document.getElementById(formId).reset();
+    document.getElementById(formId).style.display = 'none';
+    // Fix: Responsive layouts ke standard ko maintain rakhne ke liye 'block' use kiya
+    document.getElementById(btnId).style.display = 'block'; 
+}
+
+// === SAFE PYTHON FETCH UTILITY ===
+async function getLivePriceFromPython(ticker) {
+    try {
+        const res = await fetch(`https://wealth-tracker-2.onrender.com/get_price?ticker=${ticker}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.price;
+    } catch (error) {
+        console.log("Python server offline hai ya error hai.");
+        return null;
+    }
+}
+
+// ================= STOCKS OPERATIONS =================
+async function submitStockData() {
+    let name = document.getElementById('stockName').value.trim().toUpperCase();
+    let qty = parseFloat(document.getElementById('stockQty').value);
+    let price = parseFloat(document.getElementById('stockPrice').value);
+
+    if (name === "" || isNaN(qty) || isNaN(price)) { alert("Details sahi dalo bhai!"); return; }
+    if (globalStocks[name]) { alert("Stock already added!"); return; }
+
+    let liveMarketPrice = await getLivePriceFromPython(name);
+    if (!liveMarketPrice) {
+        liveMarketPrice = price; 
+    }
+
+    globalStocks[name] = { qty: qty, buyPrice: price, curPrice: liveMarketPrice };
+
+    myChart1.data.labels.push(name);
+    myChart1.data.datasets[0].data.push(qty * liveMarketPrice);
+    myChart1.data.datasets[0].backgroundColor.push(colorPalette[(myChart1.data.labels.length - 1) % colorPalette.length]);
+
+    myChart2.data.labels.push(name);
+    myChart2.data.datasets[0].data.push(qty);
+    myChart2.data.datasets[0].backgroundColor.push(colorPalette[(myChart2.data.labels.length - 1) % colorPalette.length]);
+
+    myChart1.update(); myChart2.update();
+
+    let totalInvested = qty * price;
+    let totalCurrent = qty * liveMarketPrice;
+    let pnl = totalCurrent - totalInvested;
+    let pnlPercent = totalInvested > 0 ? (pnl / totalInvested) * 100 : 0;
+
+    const tableBody = document.querySelector('#stockTable tbody');
+    const row = document.createElement('tr');
+    row.id = `stock-row-${name}`;
+    
+    row.innerHTML = `
+        <td><b>${name}</b></td>
+        <td>₹${price.toFixed(2)}</td>
+        <td class="live-qty">${qty}</td>
+        <td class="live-buy-val">₹${totalInvested.toFixed(2)}</td>
+        <td class="live-cur-price">₹${liveMarketPrice.toFixed(2)}</td>
+        <td class="live-pnl ${pnl >= 0 ? 'text-profit' : 'text-loss'}">₹${pnl.toFixed(2)} (${pnlPercent.toFixed(2)}%)</td>
+        <td>
+            <div class="action-btns">
+                <button class="btn-buy" onclick="openModal('${name}', 'BUY')">Buy</button>
+                <button class="btn-sell" onclick="openModal('${name}', 'SELL')">Sell</button>
+            </div>
+        </td>
+    `;
+    tableBody.appendChild(row);
+    resetFormToggle('stockForm', 'toggleFormBtn');
+}
+
+// ================= SAVINGS OPERATIONS =================
+async function submitSavingsData() {
+    let name = document.getElementById('savingsName').value.trim().toUpperCase();
+    let amount = parseFloat(document.getElementById('savingsAmount').value);
+
+    if (name === "" || isNaN(amount)) { alert("Data enter karo!"); return; }
+
+    let selectedColor = '#3498db';
+    let isMetal = false;
+    
+    if (name.includes('GOLD')) { selectedColor = '#d4af37'; isMetal = true; }
+    else if (name.includes('SILVER')) { selectedColor = '#c0c0c0'; isMetal = true; }
+    else { selectedColor = '#ff6b81'; }
+
+    if (isMetal && amount < 0.1) {
+        alert("Bhai Gold aur Silver ki entry kam se kam 0.1g honi chahiye!");
+        return;
+    }
+
+    let baseInvestedValue = amount;
+    let curValue = amount;
+
+    if (isMetal) {
+        let livePrice = await getLivePriceFromPython(name);
+        if (livePrice) {
+            baseInvestedValue = amount * (livePrice / 100); 
+            curValue = baseInvestedValue;
+        } else {
+            baseInvestedValue = amount * (name.includes('GOLD') ? 6500 : 75);
+            curValue = baseInvestedValue;
+        }
+    }
+
+    globalSavings[name] = { amount: amount, invested: baseInvestedValue, curValue: curValue, isMetal: isMetal, color: selectedColor };
+
+    savingsChart1.data.labels.push(name);
+    savingsChart1.data.datasets[0].data.push(curValue);
+    savingsChart1.data.datasets[0].backgroundColor.push(selectedColor);
+    
+    savingsChart2.data.labels.push(name);
+    savingsChart2.data.datasets[0].data.push(curValue);
+    savingsChart2.data.datasets[0].backgroundColor.push(selectedColor);
+
+    savingsChart1.update(); savingsChart2.update();
+
+    let pnl = curValue - baseInvestedValue;
+
+    const tableBody = document.querySelector('#savingsTable tbody');
+    const row = document.createElement('tr');
+    row.id = `savings-row-${name}`;
+    
+    row.innerHTML = `
+        <td><b>${name}</b></td>
+        <td>${isMetal ? amount + ' g' : '₹' + amount.toLocaleString('en-IN')}</td>
+        <td>₹${baseInvestedValue.toFixed(2)}</td>
+        <td class="save-cur-val">₹${curValue.toFixed(2)}</td>
+        <td class="save-pnl ${pnl >= 0 ? 'text-profit' : 'text-loss'}">₹${pnl.toFixed(2)}</td>
+        <td style="color: ${selectedColor}; font-weight: bold;">● Active</td>
+    `;
+    tableBody.appendChild(row);
+    resetFormToggle('savingsForm', 'toggleSavingsBtn');
+}
+
+// ================= MUTUAL FUNDS OPERATIONS =================
+async function submitMfData() {
+    let name = document.getElementById('mfName').value.trim().toUpperCase();
+    let amount = parseFloat(document.getElementById('mfAmount').value);
+
+    if (name === "" || isNaN(amount)) { alert("Data fill karein!"); return; }
+
+    let curValue = amount;
+
+    globalMFs[name] = { invested: amount, current: curValue, ticker: name };
+
+    mfChart1.data.labels.push(name);
+    mfChart1.data.datasets[0].data.push(curValue);
+    mfChart1.data.datasets[0].backgroundColor.push(colorPalette[(mfChart1.data.labels.length - 1) % colorPalette.length]);
+
+    mfChart2.data.labels.push(name);
+    mfChart2.data.datasets[0].data.push(curValue);
+    mfChart2.data.datasets[0].backgroundColor.push(colorPalette[(mfChart2.data.labels.length - 1) % colorPalette.length]);
+
+    mfChart1.update(); mfChart2.update();
+
+    let pnl = curValue - amount;
+
+    const tableBody = document.querySelector('#mfTable tbody');
+    const row = document.createElement('tr');
+    row.id = `mf-row-${name}`;
+    
+    row.innerHTML = `
+        <td><b>${name}</b></td>
+        <td>₹${amount.toLocaleString('en-IN')}</td>
+        <td class="mf-cur-val">₹${curValue.toFixed(2)}</td>
+        <td class="mf-pnl ${pnl >= 0 ? 'text-profit' : 'text-loss'}">₹${pnl.toFixed(2)}</td>
+        <td style="color: #3b82f6; font-weight: bold;">● Live</td>
+    `;
+    tableBody.appendChild(row);
+    resetFormToggle('mfForm', 'toggleMfBtn');
+}
+
+// ================= AUTOMATIC LIVE REFRESH LOOP =================
+setInterval(async () => {
+    console.log("🔄 [REFRESHING...] Background automatic tick active.");
+
+    // 1. Stocks updater
+    for (let symbol in globalStocks) {
+        let stock = globalStocks[symbol];
+        let freshPrice = await getLivePriceFromPython(symbol);
+        
+        if (freshPrice && freshPrice > 0) {
+            stock.curPrice = freshPrice;
+            let totalInvested = stock.qty * stock.buyPrice;
+            let totalCurrent = stock.qty * stock.curPrice;
+            let pnl = totalCurrent - totalInvested;
+            let pnlPercent = totalInvested > 0 ? (pnl / totalInvested) * 100 : 0;
+
+            let row = document.getElementById(`stock-row-${symbol}`);
+            if (row) {
+                row.querySelector('.live-cur-price').innerText = `₹${stock.curPrice.toFixed(2)}`;
+                let pnlCell = row.querySelector('.live-pnl');
+                pnlCell.innerText = `${pnl >= 0 ? '+' : ''}₹${pnl.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
+                pnlCell.className = `live-pnl ${pnl >= 0 ? 'text-profit' : 'text-loss'}`;
+            }
+
+            let index = myChart1.data.labels.indexOf(symbol);
+            if (index !== -1) {
+                myChart1.data.datasets[0].data[index] = totalCurrent;
+            }
+        }
+    }
+    if (myChart1.data.labels.length > 0) myChart1.update();
+
+    // 2. Metals updater
+    for (let asset in globalSavings) {
+        let save = globalSavings[asset];
+        if (save.isMetal) {
+            let freshMetalPrice = await getLivePriceFromPython(asset);
+            if (freshMetalPrice && freshMetalPrice > 0) {
+                save.curValue = save.amount * (freshMetalPrice / 100);
+                let pnl = save.curValue - save.invested;
+
+                let row = document.getElementById(`savings-row-${asset}`);
+                if (row) {
+                    row.querySelector('.save-cur-val').innerText = `₹${save.curValue.toFixed(2)}`;
+                    let pnlCell = row.querySelector('.save-pnl');
+                    pnlCell.innerText = `${pnl >= 0 ? '+' : ''}₹${pnl.toFixed(2)}`;
+                    pnlCell.className = `save-pnl ${pnl >= 0 ? 'text-profit' : 'text-loss'}`;
+                }
+                let indexS = savingsChart1.data.labels.indexOf(asset);
+                if (indexS !== -1) {
+                    savingsChart1.data.datasets[0].data[indexS] = save.curValue;
+                }
+            }
+        }
+    }
+    if (savingsChart1.data.labels.length > 0) savingsChart1.update();
+
+}, 5000); 
+
+// ================= MODALS & TRANSACTIONS =================
+function openModal(name, action) {
+    document.getElementById('modalStockName').value = name;
+    document.getElementById('modalActionType').value = action;
+    document.getElementById('modalTitle').innerText = `${action} - ${name}`;
+    document.getElementById('modalPriceLabel').innerText = action === 'BUY' ? 'Buying Price:' : 'Selling Price:';
+    document.getElementById('modalPrice').value = ""; document.getElementById('modalQty').value = "";
+    document.getElementById('actionModal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('actionModal').style.display = 'none'; }
+
+function processTransaction() {
+    let name = document.getElementById('modalStockName').value;
+    let action = document.getElementById('modalActionType').value;
+    let modalPrice = parseFloat(document.getElementById('modalPrice').value);
+    let modalQty = parseFloat(document.getElementById('modalQty').value);
+
+    if (isNaN(modalPrice) || isNaN(modalQty) || modalQty <= 0 || modalPrice <= 0) { alert("Details check karo!"); return; }
+
+    let stock = globalStocks[name];
+    if (action === 'SELL' && modalQty > stock.qty) { alert("Itni quantity nahi hai!"); return; }
+    let index1 = myChart1.data.labels.indexOf(name);
+
+    if (action === 'BUY') {
+        let updatedBuyPrice = ((stock.qty * stock.buyPrice) + (modalQty * modalPrice)) / (stock.qty + modalQty);
+        stock.qty += modalQty;
+        stock.buyPrice = updatedBuyPrice;
+    } else if (action === 'SELL') {
+        stock.qty -= modalQty;
+        if (stock.qty === 0) {
+            document.getElementById(`stock-row-${name}`).remove();
+            delete globalStocks[name];
+            myChart1.data.labels.splice(index1, 1); myChart1.data.datasets[0].data.splice(index1, 1);
+            myChart2.data.labels.splice(index1, 1); myChart2.data.datasets[0].data.splice(index1, 1);
+            myChart1.update(); myChart2.update();
+            closeModal(); return;
+        }
+    }
+
+    let row = document.getElementById(`stock-row-${name}`);
+    if(row) {
+        row.querySelector('.live-qty').innerText = stock.qty;
+        let totalInvested = stock.qty * stock.buyPrice;
+        row.querySelector('.live-buy-val').innerText = `₹${totalInvested.toFixed(2)}`;
+    }
+    
+    myChart1.data.datasets[0].data[index1] = stock.qty * stock.curPrice;
+    myChart2.data.datasets[0].data[index1] = stock.qty;
+    myChart1.update(); myChart2.update();
+    closeModal();
+}
+   </script>
 </body>
 </html>
