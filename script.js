@@ -71,7 +71,7 @@ function resetFormToggle(formId, btnId) {
 // === SAFE PYTHON FETCH UTILITY ===
 async function getLivePriceFromPython(ticker) {
     try {
-        const res = await fetch(`http://127.0.0.1:5000/get_price?ticker=${ticker}`);
+        const res = await fetch(`https://wealth-tracker-backend.onrender.com/get_price?ticker=${ticker}`);
         if (!res.ok) return null;
         const data = await res.json();
         return data.price;
