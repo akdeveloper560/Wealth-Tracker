@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Wealth Tracker (Live Market Mode)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-brand">WealthTracker Live</div>
+        <div class="nav-links">
+            <button class="nav-tab active" onclick="switchTab('dashboard-view', this)">Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('savings-view', this)">Savings</button>
+            <button class="nav-tab" onclick="switchTab('mf-view', this)">MF / ETF</button>
+        </div>
+    </nav>
+
+    <div id="dashboard-view" class="tab-content active-content">
+        <h1>Stocks Dashboard <span class="live-indicator">● LIVE MARKET</span></h1>
+        
+        <div class="chart-box">
+            <h3>Smart Investment (Dual View)</h3>
+            <div class="charts-wrapper">
+                <div class="chart-container">
+                    <canvas id="dynamicChart1"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dynamicChart2"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <button id="toggleFormBtn" class="btn-toggle" onclick="toggleForm('stockForm', 'toggleFormBtn')">Add New Stock</button>
+            <form id="stockForm" class="responsive-form" style="display: none;">
+                <div class="input-group">
+                    <label>Symbol / Name:</label>
+                    <input type="text" id="stockName" placeholder="e.g., AAPL, TSLA, RELIANCE">
+                </div>
+                <div class="input-group">
+                    <label>Quantity:</label>
+                    <input type="number" id="stockQty" placeholder="Enter Quantity">
+                </div>
+                <div class="input-group">
+                    <label>Entry Price:</label>
+                    <input type="number" id="stockPrice" placeholder="Entry Price">
+                </div>
+                <button type="button" class="btn-submit" onclick="submitStockData()">Submit</button>
+            </form>
+        </div>
+
+        <div class="table-box table-responsive">
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th>Asset Name</th>
+                        <th>Avg Price</th>
+                        <th>Quantity</th>
+                        <th>Buying Value</th> 
+                        <th>Current Price</th>
+                        <th>P&L (Live)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="savings-view" class="tab-content">
+        <h1>Savings & Commodities <span class="live-indicator">● LIVE SPOT</span></h1>
+        
+        <div class="chart-box">
+            <h3>Savings Breakdown (Dual View)</h3>
+            <div class="charts-wrapper">
+                <div class="chart-container">
+                    <canvas id="savingsChart1"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="savingsChart2"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <button id="toggleSavingsBtn" class="btn-toggle" onclick="toggleForm('savingsForm', 'toggleSavingsBtn')">Add Savings/Asset</button>
+            <form id="savingsForm" class="responsive-form" style="display: none;">
+                <div class="input-group">
+                    <label>Asset Name:</label>
+                    <input type="text" id="savingsName" placeholder="GOLD, SILVER or CASH">
+                </div>
+                <div class="input-group">
+                    <label>Amount / Weight:</label>
+                    <input type="number" id="savingsAmount" placeholder="Amount or Weight (g)">
+                </div>
+                <button type="button" class="btn-submit" onclick="submitSavingsData()">Submit</button>
+            </form>
+        </div>
+
+        <div class="table-box table-responsive">
+            <table id="savingsTable">
+                <thead>
+                    <tr>
+                        <th>Asset Name</th>
+                        <th>Weight/Amount</th>
+                        <th>Buying Value</th> 
+                        <th>Current Value</th>
+                        <th>Profit/Loss</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="mf-view" class="tab-content">
+        <h1>Mutual Funds & ETFs</h1>
+        
+        <div class="chart-box">
+            <h3>MF & ETF Allocation (Dual View)</h3>
+            <div class="charts-wrapper">
+                <div class="chart-container">
+                    <canvas id="mfChart1"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mfChart2"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <button id="toggleMfBtn" class="btn-toggle" onclick="toggleForm('mfForm', 'toggleMfBtn')">Add New MF/ETF</button>
+            <form id="mfForm" class="responsive-form" style="display: none;">
+                <div class="input-group">
+                    <label>Fund Name:</label>
+                    <input type="text" id="mfName" placeholder="e.g. NIFTY BEES">
+                </div>
+                <div class="input-group">
+                    <label>Amount Invested (₹):</label>
+                    <input type="number" id="mfAmount" placeholder="Total Invested">
+                </div>
+                <button type="button" class="btn-submit" onclick="submitMfData()">Submit</button>
+            </form>
+        </div>
+
+        <div class="table-box table-responsive">
+            <table id="mfTable">
+                <thead>
+                    <tr>
+                        <th>Fund / ETF Name</th>
+                        <th>Invested Amount</th>
+                        <th>Current Value</th>
+                        <th>Profit / Loss</th> 
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Transaction</h3>
+            <input type="hidden" id="modalStockName">
+            <input type="hidden" id="modalActionType">
+            
+            <div class="modal-input-group">
+                <label id="modalPriceLabel">Price:</label>
+                <input type="number" id="modalPrice" placeholder="Enter Price">
+            </div>
+            <div class="modal-input-group">
+                <label>Quantity:</label>
+                <input type="number" id="modalQty" placeholder="Enter Quantity">
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="button" id="modalSubmitBtn" class="btn-confirm" onclick="processTransaction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
