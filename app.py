@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, request, send_from_directory  # 👈 render_template ki jagah send_from_directory joda
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import yfinance as yf
 import sqlite3
 import os
 import requests
 
-# 🔥 YAHAN BADLAV KIYA: Flask ko bola ki main folder hi templates folder hai!
+# Flask ko bataya ki sab kuch main directory mein hi hai
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -29,16 +29,16 @@ def init_db():
 
 init_db()
 
-# ================= 🌟 NEW HOME ROUTE (FOR ALONE/OPEN FILES) =================
+# ================= HOME ROUTE (SINGLE FILE HANDLER) =================
 @app.route('/')
 def home():
-    """Kyunki file akeli bahar padi hai, isliye direct folder se utha kar screen par bhejega"""
+    """URL kholte hi tumhari all-in-one index.html browser par bhej dega"""
     try:
         return send_from_directory('.', 'index.html')
     except Exception as e:
         return f"Error: index.html nahi mili bhai! {str(e)}"
 
-# ================= GET PRICE ROUTE (NO CHANGES) =================
+# ================= GET PRICE ROUTE (YAHOO BYPASS) =================
 @app.route('/get_price', methods=['GET'])
 def get_price():
     ticker = request.args.get('ticker', '').strip().upper()
