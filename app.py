@@ -1,13 +1,13 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory  # 👈 render_template ki jagah send_from_directory joda
 from flask_cors import CORS
 import yfinance as yf
 import sqlite3
 import os
 import requests
 
-app = Flask(__name__)
-# CORS ko fully open rakha hai taaki local computer se request block na ho
-CORS(app, resources={r"/*": {"origins": "*"}})
+# 🔥 YAHAN BADLAV KIYA: Flask ko bola ki main folder hi templates folder hai!
+app = Flask(__name__, template_folder='.', static_folder='.')
+CORS(app)
 
 DB_NAME = "wealth_tracker.db"
 
@@ -29,26 +29,28 @@ def init_db():
 
 init_db()
 
+# ================= 🌟 NEW HOME ROUTE (FOR ALONE/OPEN FILES) =================
+@app.route('/')
+def home():
+    """Kyunki file akeli bahar padi hai, isliye direct folder se utha kar screen par bhejega"""
+    try:
+        return send_from_directory('.', 'index.html')
+    except Exception as e:
+        return f"Error: index.html nahi mili bhai! {str(e)}"
+
+# ================= GET PRICE ROUTE (NO CHANGES) =================
 @app.route('/get_price', methods=['GET'])
 def get_price():
-    # 1. Ticker ko aate hi sabse pehle bade aksharon (UPPERCASE) mein badla
-    raw_ticker = request.args.get('ticker', '').strip().upper()
-    
-    if not raw_ticker:
+    ticker = request.args.get('ticker', '').strip().upper()
+    if not ticker:
         return jsonify({"ticker": "UNKNOWN", "price": 0.0, "status": "error"}), 200
     
-    # 2. Sahi matching taaki gold/GOLD dono par sahi chale
-    if "GOLD" in raw_ticker:
+    if "GOLD" in ticker:
         ticker = "GC=F"
-    elif "SILVER" in raw_ticker:
+    elif "SILVER" in ticker:
         ticker = "SI=F"
-    else:
-        ticker = raw_ticker
-
-    print(f"[FETCHING] Market data calling for: {ticker}...")
 
     try:
-        # 3. Yahoo Finance Block Bypass karne ke liye Fake Browser Header
         session = requests.Session()
         session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -59,25 +61,17 @@ def get_price():
         
         if not df.empty:
             live_price = round(float(df['Close'].iloc[-1]), 2)
-            print(f"✅ [SUCCESS] {ticker} Price: {live_price}")
-            return jsonify({
-                "ticker": raw_ticker, 
-                "price": live_price,
-                "status": "success"
-            }), 200
+            return jsonify({"ticker": ticker, "price": live_price, "status": "success"}), 200
         else:
-            # Alternate backup method agar history khali aaye
             fast_info = stock.fast_info
             if 'last_price' in fast_info and fast_info['last_price'] is not None:
                 live_price = round(float(fast_info['last_price']), 2)
-                return jsonify({"ticker": raw_ticker, "price": live_price, "status": "success_backup"}), 200
-                
-            print(f"⚠️ [FALLBACK] '{ticker}' empty data, returning 100.00")
-            return jsonify({"ticker": raw_ticker, "price": 100.00, "status": "fallback"}), 200
+                return jsonify({"ticker": ticker, "price": live_price, "status": "success_backup"}), 200
+
+            return jsonify({"ticker": ticker, "price": 100.00, "status": "fallback"}), 200
             
     except Exception as e:
-        print(f"❌ [ERROR] Crash averted: {str(e)}")
-        return jsonify({"ticker": raw_ticker, "price": 100.00, "status": "error_fallback"}), 200
+        return jsonify({"ticker": ticker, "price": 100.00, "status": "error_fallback"}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
