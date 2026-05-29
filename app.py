@@ -3,23 +3,20 @@ from flask_cors import CORS
 import yfinance as yf
 import sqlite3
 import os
+import requests # Naya import request bypass ke liye
 
 app = Flask(__name__)
-# CORS fully allow kiya hai taaki browser aapki index.html ko block na kare
 CORS(app)
 
 DB_NAME = "wealth_tracker.db"
 
-# --- DATABASE INITIALIZATION (Bina functions ko chhede backend layer) ---
 def init_db():
-    """Server start hote hi table check karega aur data secure rakhega"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # Tumhare standard asset types ke liye ek safe grid structure table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS assets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            asset_type TEXT NOT NULL, /* STOCKS, SAVINGS, MF */
+            asset_type TEXT NOT NULL,
             name TEXT NOT NULL UNIQUE,
             qty REAL,
             buy_price REAL,
@@ -28,9 +25,7 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
-    print("💾 [DATABASE] SQLite initialization complete and secure.")
 
-# Initializing database before handling routes
 init_db()
 
 @app.route('/get_price', methods=['GET'])
@@ -39,7 +34,6 @@ def get_price():
     if not ticker:
         return jsonify({"ticker": "UNKNOWN", "price": 0.0, "status": "error"}), 200
     
-    # Gold aur Silver mapping logic
     if "GOLD" in ticker:
         ticker = "GC=F"
     elif "SILVER" in ticker:
@@ -48,7 +42,11 @@ def get_price():
     print(f"[FETCHING] Market data calling for: {ticker}...")
 
     try:
-        stock = yf.Ticker(ticker)
+        # 🔥 YEH BADLAV KIYA HAI: Yahoo Block Bypass karne ke liye Session custom header ke sath
+        session = requests.Session()
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
+        
+        stock = yf.Ticker(ticker, session=session)
         df = stock.history(period="1d")
         
         if not df.empty:
@@ -60,7 +58,13 @@ def get_price():
                 "status": "success"
             }), 200
         else:
-            # Agar stock nahi mila toh default 100 dega taaki frontend na udde
+            # Agar fir bhi Yahoo block kare, toh hum ek alternative tareeke se current price nikalenge
+            fast_info = stock.fast_info
+            if 'last_price' in fast_info and fast_info['last_price'] is not None:
+                live_price = round(float(fast_info['last_price']), 2)
+                print(f"✅ [BACKUP SUCCESS] {ticker} Price: {live_price}")
+                return jsonify({"ticker": ticker, "price": live_price, "status": "success_backup"}), 200
+                
             print(f"⚠️ [NOT FOUND] '{ticker}' nahi mila, default 100.00 fallback active.")
             return jsonify({"ticker": ticker, "price": 100.00, "status": "fallback"}), 200
             
@@ -69,9 +73,5 @@ def get_price():
         return jsonify({"ticker": ticker, "price": 100.00, "status": "error_fallback"}), 200
 
 if __name__ == '__main__':
-    print("=============================================")
-    print("      PYTHON FLASK LOCAL SERVER ACTIVE       ")
-    print("=============================================")
-    # Production deployment friendly settings (Render handles port dynamically)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
