@@ -32,20 +32,5 @@ A comprehensive personal finance and wealth tracking application that monitors y
 * **API Integration:** Yahoo Finance API (`yfinance` library)
 * **Database:** SQLite
 
----
 
-## 🚀 Getting Started
 
-Follow these steps to set up the project locally on your machine:
-
-### Prerequisites
-
-Make sure you have Python installed on your system:
-* Python 3.8 or higher
-
-### Installation & Setup
-
-1. **Clone the Repository:**
-   ```bash
-   git clone [https://github.com/akdeveloper560/Wealth-Tracker.git](https://github.com/akdeveloper560/Wealth-Tracker.git)
-   cd Wealth-Tracker
