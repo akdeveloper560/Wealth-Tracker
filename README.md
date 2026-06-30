@@ -42,5 +42,5 @@ Make sure you have Python installed on your system:
 ### Installation & Setup
 
 1. **Clone the Repository:**
-   ```bash
-   git clone [https://github.com/akdeveloper560/Wealth-Tracker]
+  
+ [https://github.com/akdeveloper560/Wealth-Tracker]
