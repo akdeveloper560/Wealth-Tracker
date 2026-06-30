@@ -1,6 +1,13 @@
   Personal Wealth & Net Worth Tracker
   [https://wealth-tracker-2.onrender.com/]
 
+  ---
+
+### ⚠️ Important Note About Live Demo
+> **Note:** This project is hosted on **Render's Free Tier**. If the app has been inactive for a while, the server goes into sleep mode. When you click the live link, **please wait about 1-2 minutes** for the server to spin up and load the data. Thank you for your patience! ⏳
+
+---
+
 A comprehensive personal finance and wealth tracking application that monitors your investments in real-time. It aggregates your stocks, mutual funds, ETFs, precious metals (Gold/Silver), cash, and liabilities to calculate your exact net worth.
 
 
@@ -36,5 +43,5 @@ Make sure you have Python installed on your system:
 
 1. **Clone the Repository:**
    ```bash
-   git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+   git clone [https://github.com/akdeveloper560/Wealth-Tracker](https://github.com/akdeveloper560/Wealth-Tracker)
    cd your-repo-name
